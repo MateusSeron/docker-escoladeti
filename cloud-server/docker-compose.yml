@@ -1,0 +1,88 @@
+version: "2"
+
+services:
+
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    restart: always
+#    network_mode: bridge
+    depends_on:
+      - jenkins
+      - sonarqube
+      - adminer
+    links:
+      - jenkins
+      - sonarqube
+      - adminer
+    ports:
+      - 80:80
+    volumes:
+      - ./www:/var/www/html
+
+  jenkins:
+    build: ./jenkins
+    container_name: jenkins
+    restart: always
+#    network_mode: bridge
+#    ports:
+#      - 8080:8080
+#      - 50000:50000
+    volumes:
+      - jenkins-data:/var/jenkins_home
+
+  sonarqube:
+    image: sonarqube:7.0
+    container_name: sonarqube
+    restart: always
+#    network_mode: bridge
+#    ports:
+#      - 8082:9000
+#      - 9092:9092
+    environment:
+      - SONARQUBE_JDBC_USERNAME=contrat
+      - SONARQUBE_JDBC_PASSWORD=contrat
+      - SONARQUBE_JDBC_URL=jdbc:postgresql://postgresdb:5432/sonar
+
+  postgresdb:
+    image: postgres:9.6.3
+    container_name: postgresdb
+#    network_mode: bridge
+    restart: always
+#    ports:
+#       - 5432:5432
+    environment:
+       - POSTGRES_DB=sonar
+       - POSTGRES_USER=contrat
+       - POSTGRES_PASSWORD=contrat
+#  db:
+#    image: postgres
+#    container_name: dbo
+#    restart: always
+#    network_mode: bridge
+#    ports:
+#      - 5433:5433
+#    environment:
+#      POSTGRES_PASSWORD: levameuvo
+
+  adminer:
+    image: adminer
+    container_name: adminer
+#    network_mode: bridge
+    restart: always
+    volumes:
+      - adminer-data:/adminer-data
+#    ports:
+#      - 8085:8085
+
+volumes:
+  jenkins-data:
+  adminer-data:
+
+
+
+networks:
+  default:
+    external:
+      name: contrat_net
+
